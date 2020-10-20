@@ -7,6 +7,7 @@
 
 server <- function(input, output) {
   
+  picks = getPicksData()
   data = runPriceFetcher()
   
   
@@ -71,18 +72,26 @@ server <- function(input, output) {
   
   output$main_plot <- renderEcharts4r({
     req(data)
-        
-    if(input$change_plot == "Share Prices"){
+    req(input$change_date)
+    req(input$analyst_pick)
+    
+    plot_data <- data
+    
+    # Filtering data
+    if(input$analyst_pick != "All"){
+      plot_data <- plot_data %>%
+        filter(analyst %in% input$analyst_pick)
+    }
+    
+    if(input$change_date == "1 Month"){
+      plot_data <- plot_data %>%
+        filter(date >= (today() - 31))
+    } 
+    
+    # Outputs the desired plot
+    if(input$change_plot == "Capital"){
       
-      data %>%
-        group_by(ticker) %>%
-        e_chart(x=date) %>%
-        e_line(share_price) %>%
-        e_title("Share Prices", left = 'center') %>%
-        e_legend(orient = "vertical", left = "right", type = "scroll")
-    } else if(input$change_plot == "Capital"){
-      
-      data %>%
+      plot_data %>%
         filter(capital != 0) %>%
         group_by(ticker) %>%
           e_chart(x=date) %>%
@@ -92,7 +101,7 @@ server <- function(input, output) {
       
     } else if(input$change_plot == "Total ($)"){
       
-      data %>%
+      plot_data %>%
         group_by(date) %>%
         summarise(`Total Capital` = sum(capital, na.rm = T)) %>%
         ungroup() %>%
@@ -102,7 +111,7 @@ server <- function(input, output) {
         e_legend(show = FALSE)
     } else if(input$change_plot == "Gains"){
       
-      data %>%
+      plot_data %>%
         mutate(gains = capital - stake) %>%
         group_by(date) %>%
         summarise(`Total Gains` = sum(gains, na.rm = T)) %>%
@@ -111,6 +120,15 @@ server <- function(input, output) {
         e_line(`Total Gains`) %>%
         e_title("Total Gains ($)", left = 'center') %>%
         e_legend(show = FALSE)
+      
+    } else if(input$change_plot == "Percent Change"){
+      
+      plot_data %>%
+        mutate(gains = ((share_price/start_price)-1)*100) %>%
+        group_by(company) %>%
+        e_chart(x=date) %>%
+        e_line(gains) %>%
+        e_title("Stock Performance", left = 'center')
     }
 
   })

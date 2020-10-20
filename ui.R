@@ -42,23 +42,36 @@ ui = shiny::htmlTemplate(
   ),
   
   # Plots ----------------------------------------------
-  plot =  echarts4rOutput("main_plot"),
-
-  change_plot_button = radioGroupButtons(
-    inputId = "change_plot", label = "",
-    choices = c("Capital", "Gains"),
-    selected = "Gains", size = "lg", width = "100%",direction = "horizontal", 
+  
+  analyst_picker = selectInput(
+    inputId = "analyst_pick",
+    label = "Analyst",
+    choices = c("All",unique(picks$analyst)),
+    selected = "All"
   ),
   
-  # andy1 = actionButton("andy_1", label = "andy1"),
-  # 
-  # andy2 = actionButton("andy_2", label = "andy2"),
+  change_plot_picker = selectInput(
+    inputId = "change_plot",
+    label = "Gains",
+    choices = c("Percent Change","Capital", "Gains"),
+    selected = "Percent Change"
+  ),
   
-  # change_plot_button = prettyRadioButtons(
-  #   inputId = "change_plot", label = "", fill = T,
-  #   choices = c("Total ($)", "Share Prices", "Capital"),
-  #   selected = "Total ($)",
-  #  status = "primary"
-  # )
+  change_date_picker = selectInput(
+    inputId = "change_date",
+    label = "Date Picker",
+    choices = c("6 Months", "1 Month"),
+    selected = "6 Month"
+  ),
+  
+  plot =  echarts4rOutput("main_plot"),
+  
+  plot_button = actionButton("andy1", "Andy"),
+  
+  change_plot_button = radioGroupButtons(
+    inputId = "change_plot2", label = "",
+    choices = c("Capital", "Gains"),
+    selected = "Gains", size = "lg", width = "100%",direction = "horizontal", 
+  )
   
 )

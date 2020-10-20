@@ -24,4 +24,3 @@ library(googlesheets)
 #  Clean Scripts ----------------------------------------------------------
 
 source("src/helper-functions.R")
-picks = read_csv('data/dummy-picks.csv',col_types = cols())

@@ -196,22 +196,33 @@
                 <h2 class="subhead">Let's check in with how our analysts have been tracking...</h2>
             </div>
         </div>
-
-      <div style = "width:95%;" id="example_plot"> 
-		<div class="col-full">
-			{{ plot }}
+		
+		<div class="row block-1-3 block-m-1-2 block-mob-full" >
+			<div class="col-block">	
+				{{ analyst_picker }}
+			</div>
+			<div class="col-block">	
+				{{ change_plot_picker }}
+			</div>
+			<div class="col-block">	
+				{{ change_date_picker }}
+			</div>
 		</div>
 		
-		<div class="row services-list block-1-2 block-tab-full">
-            {{ change_plot_button }}
-      </div>
-	  
-      </div>
+        <div> 
+			<div class="intro-wrap">
+				{{ plot }}
+			</div>
+			
+			<div class="row services-list block-1-2 block-tab-full">
+				{{ plot_button }}
+			</div>
+        </div>
 
     </section> 
     <!-- end s-map -->
     
-    <section id="vivek" class="s-services">
+    <section id="andy" class="s-services">
       <div class="row section-header aos-init aos-animate" data-aos="fade-up">
             <div class="col-full">
                 <h3 class="subhead">The Brains</h3>
@@ -243,6 +254,23 @@
 				<h3 class="subhead">Player of the Day</h3>
 				<p></p>
                 <div class="testimonials">
+				
+					<!-- October -->
+                    <div class="testimonials__slide">
+
+                        <p>From rags to riches - talk about a comeback story! Don't let his humble demeanour distract you,
+						because wowee, this man sure knows his way around a financial statement. Tom was coming off some 
+						disappointing September numbers heading into today's meeting, but that didn't stop him. He went 
+						back to the fundamentals, and pulled out a guaranteed 30 bagger. Keep your eye out for this man.						
+						</p>
+
+                        <img src="images/analysts/tom-swayne.PNG" alt="Author image" class="testimonials__avatar">
+                        <div class="testimonials__info">
+                            <span class="testimonials__name">Tom Swayne</span> 
+                            <span class="testimonials__pos">Mr Electric</span>
+                        </div>
+
+                    </div>
 					
 					<!-- September -->
                     <div class="testimonials__slide">
@@ -252,22 +280,23 @@
 						However, what really separated hum from the rest was his knowledge of the ins-and-outs of the cryptocurrency world, 
 						thus earning himself the new title of Cryptopedia. Well done Nick!</p>
 
-                        <img src="images/player-of-day/nick-arbuckle.PNG" alt="Author image" class="testimonials__avatar">
+                        <img src="images/analysts/nick-arbuckle.PNG" alt="Author image" class="testimonials__avatar">
                         <div class="testimonials__info">
                             <span class="testimonials__name">Nick Arbuckle</span> 
                             <span class="testimonials__pos">Cryptopedia</span>
                         </div>
 
-					<!-- October -->
                     </div>
 					
+					<!-- August -->
 					<div class="testimonials__slide">
 
-                        <p>As his nickname suggests - The Wolf of Esplanade - is the master of complex derivative trading. And so it 
-							should come as no surprise that Matt single handledy pulled off not one, but two shorts in a single trading 
-							month.</p>
+                        <p> The un-official first Player of the Day can go to only one man - Matthew Bowden. As his nickname suggests, 
+							this man knows a thing or two about complex derivative trading. And so it should come as no surprise that 
+							Matt single handledy pulled off not one, but two complex shorts in a single trading month. Jordan Belfort...
+							you've got some competition.</p>
 
-                        <img src="images/player-of-day/matt-bowden.PNG" alt="Author image" class="testimonials__avatar">
+                        <img src="images/analysts/matt-bowden.PNG" alt="Author image" class="testimonials__avatar">
                         <div class="testimonials__info">
                             <span class="testimonials__name">Matt Bowden</span> 
                             <span class="testimonials__pos">Wolf of Esplanade</span>

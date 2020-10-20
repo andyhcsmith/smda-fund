@@ -1,0 +1,8 @@
+meeting,analyst,ticker,ticker_long,company,company_type,stake,pick,date_picked,date_sold,%Logic
+1,Will,MSB.AX,ASX:MSB,Mesoblast,Company,140,Actual,14/08/2020,,0
+2,Andy,NVDA,NASDAQ:NVDA,Nvidia,Company,0,Notional,22/09/2020,,0
+2,Ben,ZM,NASDAQ:ZM,Zoom,Company,0,Notional,22/09/2020,,0
+2,Will,WBT.AX,ASX:WBT,Weebit Nano,Company,0,Notional,22/09/2020,,0
+2,Nick,PLX.NZ,NZE:PLX,Plexure,Company,140,Actual,22/09/2020,,1
+2,Jamie,LULU,NASDAQ:LULU,Lulu Lemon,Company,0,Notional,22/09/2020,,0
+2,Tom,TSLA,NASDAQ:TSLA,Tesla,Company,0,Notional,22/09/2020,,0

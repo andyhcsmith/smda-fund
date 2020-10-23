@@ -41,6 +41,16 @@ ui = shiny::htmlTemplate(
     inline = T
   ),
   
+  # Tables --------------------------------------------
+  
+  leaderboard_table = tableOutput(
+    "leaderboard"
+  ),
+  
+  all_picks_table = tableOutput(
+    "all_picks"
+  ),
+  
   # Plots ----------------------------------------------
   
   analyst_picker = selectInput(
@@ -53,15 +63,15 @@ ui = shiny::htmlTemplate(
   change_plot_picker = selectInput(
     inputId = "change_plot",
     label = "Gains",
-    choices = c("Percent Change","Capital", "Gains"),
-    selected = "Percent Change"
+    choices = c("Portfolio Overview", "PGI Manager" ,"Actual Portfolio", "Virtual Portfolio", "Total Gains"),
+    selected = "Portfolio Overview"
   ),
   
   change_date_picker = selectInput(
     inputId = "change_date",
     label = "Date Picker",
-    choices = c("6 Months", "1 Month"),
-    selected = "6 Month"
+    choices = c("Max","6 Months", "1 Month", "1 Week"),
+    selected = "1 Month"
   ),
   
   plot =  echarts4rOutput("main_plot"),

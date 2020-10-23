@@ -188,7 +188,7 @@
     <!-- end s-about -->
 
 
-    <!-- map ================================================== -->
+    <!-- Performance Graphs ================================================== -->
     <section id='services' class="s-clients">
       
         <div class="row section-header has-bottom-sep aos-init aos-animate" data-aos="fade-up">
@@ -214,14 +214,34 @@
 				{{ plot }}
 			</div>
 			
-			<div class="row services-list block-1-2 block-tab-full">
-				{{ plot_button }}
-			</div>
         </div>
 
     </section> 
-    <!-- end s-map -->
+    <!-- end graphs -->
     
+	 <!-- Leaderboards
+    ================================================== -->
+    <section id="contact" class="s-contact">
+
+        <div class="overlay"></div>
+        <div class="contact__line"></div>
+
+        <div class="row section-header" data-aos="fade-up">
+            <div class="col-full">
+                <h3 class="subhead">Leadberboard</h3>
+                <h1 class="display-2 display-2--light">Name and shame</h1>
+            </div>
+        </div>
+
+        <div class="row contact-content" data-aos="fade-up">
+                {{ leaderboard_table }}
+        </div>
+		
+    </section> <!-- end s-Leaderboards -->
+
+	
+	
+	<!-- Player of the Day -->
     <section id="andy" class="s-services">
       <div class="row section-header aos-init aos-animate" data-aos="fade-up">
             <div class="col-full">

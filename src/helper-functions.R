@@ -34,7 +34,8 @@ getSharePrices <- function(pick){
   share_prices <- share_prices %>%
     mutate(start_price = start_price) %>%
     mutate(num_shares = stake/start_price) %>%
-    mutate(capital = num_shares * share_price)
+    mutate(capital = num_shares * share_price) %>%
+    mutate(gains = ((share_price/start_price)-1)*100)
   
   return(share_prices)
 }

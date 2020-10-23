@@ -7,34 +7,33 @@
 
 server <- function(input, output) {
   
-  picks = getPicksData()
-  data = runPriceFetcher()
-  
-  
   # Basic Numbers Page --------------------------------------------------------------
   
   output$best_company <- renderText({
+    req(data)
+    
     data %>%
+      group_by(company) %>%
       filter(date == max(date)) %>%
-      filter(capital == max(capital)) %>%
+      ungroup() %>%
+      filter(gains == max(gains, na.rm=T)) %>%
       select(company) %>%
       as.character()
   })
   
   output$top_analyst <- renderText({
     req(data)
-  
-    data %>%
+ 
+    data %>%     
+      group_by(company) %>%
       filter(date == max(date)) %>%
-      group_by(analyst) %>%
-      summarise(stake = sum(stake), capital = sum(capital)) %>%
       ungroup() %>%
-      filter(stake != 0) %>%
-      mutate(gains = capital/stake) %>%
-      filter(gains == max(gains)) %>%
+      group_by(analyst) %>%
+      summarise(total_gains = mean(gains, na.rm = T)) %>%
+      ungroup() %>%
+      filter(total_gains == max(total_gains, na.rm=T)) %>%
       select(analyst) %>%
       as.character()
-
   })
   
   output$num_installments = renderText({
@@ -48,24 +47,51 @@ server <- function(input, output) {
   })
   
   output$capital_gains = renderText({
-    total_now = data %>%
-                filter(date == max(date)) %>%
-                select(capital) %>% 
-                sum()
-    investment = sum(picks$stake)
-    
-    total_now - investment
-    
+    data %>%
+      filter(pick =="Actual") %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup() %>%
+      mutate(actual_gain = capital - stake) %>%
+      select(actual_gain) %>%
+      sum()
   })
   
   output$overall_performance = renderText({
-    total_now = data %>%
-      filter(date == max(date)) %>%
-      select(capital) %>% 
-      sum()
-    investment = sum(picks$stake)
+    temp <- data %>%
+            filter(pick =="Actual") %>%
+            group_by(company) %>%
+            filter(date == max(date)) %>%
+            ungroup()
+    round((sum(temp$capital) / sum(temp$stake) - 1) * 100, 2)
     
-    round(((total_now - investment)/investment), 2) * 100
+  })
+
+  
+  # Table ---------------------------------------------------------------------------
+  
+  output$leaderboard <- renderTable({
+    data %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup() %>%
+      group_by(analyst) %>%
+      summarise(Performance = mean(gains, na.rm = T)) %>%
+      ungroup() %>%
+      rename(Analyst = analyst) %>%
+      arrange(-Performance)
+  })
+  
+  output$all_picks <- renderTable({
+    data %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup() %>%
+      group_by(analyst) %>%
+      summarise(Performance = mean(gains, na.rm = T)) %>%
+      ungroup() %>%
+      rename(Analyst = analyst) %>%
+      arrange(-Performance)
   })
   
   # Plots ---------------------------------------------------------------------------
@@ -86,49 +112,61 @@ server <- function(input, output) {
     if(input$change_date == "1 Month"){
       plot_data <- plot_data %>%
         filter(date >= (today() - 31))
-    } 
+    } else if(input$change_date == "1 Week"){
+      plot_data <- plot_data %>%
+        filter(date >= (today() - 7))
+    }
     
     # Outputs the desired plot
-    if(input$change_plot == "Capital"){
+    if(input$change_plot == "Portfolio Overview"){
       
       plot_data %>%
-        filter(capital != 0) %>%
-        group_by(ticker) %>%
-          e_chart(x=date) %>%
-          e_line(capital) %>%
-          e_title("Capital by Company", left = 'center') %>%
-          e_legend(orient = "horizontal", top = "bottom")
-      
-    } else if(input$change_plot == "Total ($)"){
-      
-      plot_data %>%
-        group_by(date) %>%
-        summarise(`Total Capital` = sum(capital, na.rm = T)) %>%
-        ungroup() %>%
+        group_by(pick, date) %>%
+        summarise(gains = mean(gains, na.rm = T)) %>%
+        ungroup() %>% 
+        group_by(pick) %>%
         e_chart(x=date) %>%
-        e_line(`Total Capital`) %>%
-        e_title("Total Capital ($)", left = 'center') %>%
-        e_legend(show = FALSE)
-    } else if(input$change_plot == "Gains"){
+        e_line(gains) %>%
+        e_title("Portfolio Overview - Return %", left = 'center') %>%
+        e_legend(orient = "horizontal", top = "bottom")
+      
+    } else if(input$change_plot == "PGI Manager"){
       
       plot_data %>%
-        mutate(gains = capital - stake) %>%
+        group_by(analyst, date) %>%
+        summarise(gains = mean(gains, na.rm = T)) %>%
+        ungroup() %>% 
+        group_by(analyst) %>%
+        e_chart(x=date) %>%
+        e_line(gains) %>%
+        e_title("PGI Manager - Return %", left = 'center') %>%
+        e_legend(orient = "horizontal", top = "bottom")
+      
+    } else if(input$change_plot == "Total Gains"){
+      
+      plot_data %>%
+        filter(pick == "Actual") %>%
         group_by(date) %>%
         summarise(`Total Gains` = sum(gains, na.rm = T)) %>%
         ungroup() %>%
         e_chart(x=date) %>%
         e_line(`Total Gains`) %>%
-        e_title("Total Gains ($)", left = 'center') %>%
+        e_title("Total Gains ($))", left = 'center') %>%
         e_legend(show = FALSE)
       
-    } else if(input$change_plot == "Percent Change"){
+    } else if(input$change_plot == "Actual Portfolio"){
+      
+
+      
+    } else if(input$change_plot == "Virtual Portfolio"){
       
       plot_data %>%
-        mutate(gains = ((share_price/start_price)-1)*100) %>%
         group_by(company) %>%
         e_chart(x=date) %>%
         e_line(gains) %>%
-        e_title("Stock Performance", left = 'center')
+        e_title("PGI Manager - Return %", left = 'center') %>%
+        e_legend(orient = "horizontal", top = "bottom")
+      
     }
 
   })

@@ -20,7 +20,11 @@ library(echarts4r)
 library(shinyWidgets)
 library(rsconnect)
 library(googlesheets)
+library(gt)
 
 #  Clean Scripts ----------------------------------------------------------
 
 source("src/helper-functions.R")
+
+picks = getPicksData()
+data = runPriceFetcher()

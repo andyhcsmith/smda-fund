@@ -67,31 +67,43 @@ server <- function(input, output) {
     
   })
 
+  # ValueBoxes --------------------------------------------------------------------
+  
+  output$top_analyst_box <- renderValueBox({
+    valueBox(
+      "Will", "Progress", icon = icon("list"),
+      color = "purple"
+    )
+  })
+  
   
   # Table ---------------------------------------------------------------------------
   
-  output$leaderboard <- renderTable({
-    data %>%
-      group_by(company) %>%
-      filter(date == max(date)) %>%
-      ungroup() %>%
-      group_by(analyst) %>%
-      summarise(Performance = mean(gains, na.rm = T)) %>%
-      ungroup() %>%
-      rename(Analyst = analyst) %>%
-      arrange(-Performance)
+  output$all_picks <- renderDataTable({
+    
+    today_change <- returnCalculator("company",1) %>% rename("Todays Change" = "percent_gain") 
+    week_change <- returnCalculator("company", 7)
+    total_change <- returnCalculator("company", 1000) %>% rename("Total Change" = "percent_gain") 
+    
+    overview <- inner_join(today_change, total_change %>% select(company, `Total Change`), by = "company")
+    overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares")
+    
+    datatable(overview, options = list(pageLength=10, dom = 't'))
+    
   })
   
-  output$all_picks <- renderTable({
-    data %>%
+  output$leaderboard <- renderDataTable({
+    leaderboard <- data %>%
       group_by(company) %>%
       filter(date == max(date)) %>%
       ungroup() %>%
       group_by(analyst) %>%
-      summarise(Performance = mean(gains, na.rm = T)) %>%
+      summarise(Performance = round(mean(gains, na.rm = T),2)) %>%
       ungroup() %>%
       rename(Analyst = analyst) %>%
       arrange(-Performance)
+    
+    datatable(leaderboard, options = list(dom = 't'))
   })
   
   # Plots ---------------------------------------------------------------------------
@@ -156,7 +168,13 @@ server <- function(input, output) {
       
     } else if(input$change_plot == "Actual Portfolio"){
       
-
+      plot_data %>%
+        filter(pick == "Actual") %>%
+        group_by(company) %>%
+        e_chart(x=date) %>%
+        e_line(gains) %>%
+        e_title("PGI Manager - Return %", left = 'center') %>%
+        e_legend(orient = "horizontal", top = "bottom")
       
     } else if(input$change_plot == "Virtual Portfolio"){
       

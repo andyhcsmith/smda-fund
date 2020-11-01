@@ -41,13 +41,19 @@ ui = shiny::htmlTemplate(
     inline = T
   ),
   
+  # ValueBoxes ----------------------------------------
+  
+  top_analyst_valuebox = valueBoxOutput("top_analyst_box"),
+  
+  
+  
   # Tables --------------------------------------------
   
-  leaderboard_table = tableOutput(
+  leaderboard_table = dataTableOutput(
     "leaderboard"
   ),
   
-  all_picks_table = tableOutput(
+  all_picks_table = dataTableOutput(
     "all_picks"
   ),
   

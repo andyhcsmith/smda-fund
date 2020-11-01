@@ -6,21 +6,16 @@
 ###############################################################################
 
 # Dependencies ------------------------------------------------------------
-library(shiny)
 library(tidyverse)
-library(janitor)
 library(lubridate)
-library(shinycssloaders)
-library(sp)
-library(plotly)
-library(shinymaterial)
-library(quantmod)
+library(shiny)
+library(shinyWidgets)
+library(shinydashboard)
+library(DT)
 library(ECharts2Shiny)
 library(echarts4r)
-library(shinyWidgets)
+library(quantmod)
 library(rsconnect)
-library(googlesheets)
-library(gt)
 
 #  Clean Scripts ----------------------------------------------------------
 

@@ -5,7 +5,7 @@
 # Created 2020-10-02
 ###############################################################################
 
-# Get our picks
+# Get our picks from the google sheet
 getPicksData <- function(){
 
   picks = read.csv(url("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBC7iMqU4JNUBNqzmxPt7o_blG9ritXAR0RAQmbAUFaHO4oQpnWn8cKrj9tXSxerlwc5fAIbuOxiLH/pub?gid=343251432&single=true&output=csv"))
@@ -53,5 +53,33 @@ runPriceFetcher <- function(){
   
   all_prices <- all_prices %>% filter(!is.na(share_price))
   return(all_prices) 
+}
+
+# Takes a stock and works out return between two dates
+returnCalculator <- function(group_variable, days){
+  
+  if(days == 1){
+    companyData = data %>% group_by(get(group_variable))
+    comparison_price = companyData %>% 
+      filter(date != max(date)) %>% 
+      filter(date == max(date)) %>%
+      select(share_price) %>% rename("comp_price" = "share_price")
+    
+  } else{
+    date_from = today() - days
+    companyData = data %>% group_by(get(group_variable)) %>% filter(date >= date_from)
+    comparison_price = companyData %>% filter(date == min(date)) %>% select(share_price) %>% rename("comp_price" = "share_price")
+  }
+  
+  todays_price = companyData %>% filter(date == max(date)) %>% select(share_price, num_shares) %>% 
+    rename("Share Price" = "share_price")
+  comparisonData <- inner_join(todays_price, comparison_price, by = "get(group_variable)")
+  comparisonData <- comparisonData %>% 
+    mutate(num_shares = round(num_shares,2),
+           percent_gain = round(100*((`Share Price`/comp_price)-1),2)) %>%
+    select(-comp_price)
+  colnames(comparisonData)[1] = group_variable
+  
+  return(comparisonData)
 }
 

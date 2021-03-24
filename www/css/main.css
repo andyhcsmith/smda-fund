@@ -2945,6 +2945,11 @@ html.no-csstransitions .home-content__main {
     position: relative;
 }
 
+.s-contact .leaderboard {
+    background-color: #151515;
+	color: rgba(255, 255, 255, 0.9);
+}
+
 .s-contact .overlay {
     position: absolute;
     top: 0;

@@ -9,6 +9,7 @@
 getPicksData <- function(){
 
   picks = read.csv(url("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBC7iMqU4JNUBNqzmxPt7o_blG9ritXAR0RAQmbAUFaHO4oQpnWn8cKrj9tXSxerlwc5fAIbuOxiLH/pub?gid=343251432&single=true&output=csv"))
+  picks = picks[!duplicated(picks$ticker),]
   
   return(picks)
 }
@@ -27,7 +28,8 @@ getSharePrices <- function(pick){
   share_prices <- merge(pick, share_prices)
   share_prices <- share_prices %>% 
     mutate(date = ymd(date)) %>%
-    filter(!is.na(date))
+    filter(!is.na(date)) %>%
+    filter(!(weekdays(date) %in% c("Saturday","Sunday")))
   
   # How many shares did we purchase
   start_price <- share_prices %>% filter(date == date_picked) %>% select(share_price) %>% as.numeric()

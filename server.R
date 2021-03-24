@@ -6,6 +6,7 @@
 ###############################################################################
 
 server <- function(input, output) {
+  whichTable <- reactiveVal(TRUE)
   
   # Basic Numbers Page --------------------------------------------------------------
   
@@ -13,6 +14,7 @@ server <- function(input, output) {
     req(data)
     
     data %>%
+      filter(pick == "Actual") %>%
       group_by(company) %>%
       filter(date == max(date)) %>%
       ungroup() %>%
@@ -79,33 +81,44 @@ server <- function(input, output) {
   
   # Table ---------------------------------------------------------------------------
   
-  output$all_picks <- renderDataTable({
+  
+  observeEvent(input$table_button, {
+    whichTable(!whichTable())
+  })
+  
+  selected_table <- reactive({
     
-    today_change <- returnCalculator("company",1) %>% rename("Todays Change" = "percent_gain") 
-    week_change <- returnCalculator("company", 7)
-    total_change <- returnCalculator("company", 1000) %>% rename("Total Change" = "percent_gain") 
-    
-    overview <- inner_join(today_change, total_change %>% select(company, `Total Change`), by = "company")
-    overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares")
-    
-    datatable(overview, options = list(pageLength=10, dom = 't'))
+    if (whichTable()) {
+      leaderboard <- data %>%
+        group_by(company) %>%
+        filter(date == max(date)) %>%
+        ungroup() %>%
+        group_by(analyst) %>%
+        summarise(Performance = round(mean(gains, na.rm = T),2)) %>%
+        ungroup() %>%
+        rename(Analyst = analyst) %>%
+        arrange(-Performance)
+      
+      datatable(leaderboard, options = list(dom = 't'))
+    } else {
+
+      today_change <- returnCalculator("company",1) %>% rename("Todays Change" = "percent_gain") 
+      week_change <- returnCalculator("company", 7)
+      total_change <- returnCalculator("company", 1000) %>% rename("Total Change" = "percent_gain") 
+      
+      overview <- inner_join(today_change, total_change %>% select(company, `Total Change`), by = "company")
+      overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares")
+      
+      datatable(overview, options = list(pageLength=10, dom = 't'))
+    }
     
   })
   
   output$leaderboard <- renderDataTable({
-    leaderboard <- data %>%
-      group_by(company) %>%
-      filter(date == max(date)) %>%
-      ungroup() %>%
-      group_by(analyst) %>%
-      summarise(Performance = round(mean(gains, na.rm = T),2)) %>%
-      ungroup() %>%
-      rename(Analyst = analyst) %>%
-      arrange(-Performance)
-    
-    datatable(leaderboard, options = list(dom = 't'))
+    selected_table()
   })
   
+
   # Plots ---------------------------------------------------------------------------
   
   output$main_plot <- renderEcharts4r({
@@ -183,7 +196,7 @@ server <- function(input, output) {
         e_chart(x=date) %>%
         e_line(gains) %>%
         e_title("PGI Manager - Return %", left = 'center') %>%
-        e_legend(orient = "horizontal", top = "bottom")
+        e_legend(orient = "horizontal", top = "bottom", type = c("plain", "scroll"))
       
     }
 

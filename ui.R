@@ -49,13 +49,15 @@ ui = shiny::htmlTemplate(
   
   # Tables --------------------------------------------
   
+  table_but = actionButton("table_button", "Switch"),
+  
   leaderboard_table = dataTableOutput(
     "leaderboard"
   ),
   
-  all_picks_table = dataTableOutput(
-    "all_picks"
-  ),
+  # all_picks_table = dataTableOutput(
+  #   "all_picks"
+  # ),
   
   # Plots ----------------------------------------------
   

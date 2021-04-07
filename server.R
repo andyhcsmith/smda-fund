@@ -158,7 +158,13 @@ server <- function(input, output) {
         filter(analyst %in% input$analyst_pick)
     }
     
-    if(input$change_date == "1 Month"){
+    if(input$change_date == "Max"){
+      plot_data <- returnCalculatorDaily(plot_data)
+    } else if(input$change_date == "6 Months"){
+      plot_data <- plot_data %>%
+        filter(date >= (today() - 180))
+      plot_data <- returnCalculatorDaily(plot_data)
+    }  else if(input$change_date == "1 Month"){
       plot_data <- plot_data %>%
         filter(date >= (today() - 31))
       plot_data <- returnCalculatorDaily(plot_data)
@@ -173,7 +179,8 @@ server <- function(input, output) {
       
       plot_data %>%
         group_by(pick, date) %>%
-        summarise(gains = mean(gains, na.rm = T)) %>%
+        summarise(gains = mean(relative_gain, na.rm = T)) %>%
+        arrange(date) %>%
         ungroup() %>% 
         group_by(pick) %>%
         e_chart(x=date) %>%
@@ -185,7 +192,8 @@ server <- function(input, output) {
       
       plot_data %>%
         group_by(analyst, date) %>%
-        summarise(gains = mean(gains, na.rm = T)) %>%
+        summarise(gains = mean(relative_gain, na.rm = T)) %>%
+        arrange(date) %>%
         ungroup() %>% 
         group_by(analyst) %>%
         e_chart(x=date) %>%
@@ -198,7 +206,8 @@ server <- function(input, output) {
       plot_data %>%
         filter(pick == "Actual") %>%
         group_by(date) %>%
-        summarise(`Total Gains` = sum(gains, na.rm = T)) %>%
+        summarise(`Total Gains` = sum(relative_gain, na.rm = T)) %>%
+        arrange(date) %>%
         ungroup() %>%
         e_chart(x=date) %>%
         e_line(`Total Gains`) %>%
@@ -210,6 +219,7 @@ server <- function(input, output) {
       plot_data %>%
         filter(pick == "Actual") %>%
         group_by(company) %>%
+        arrange(date) %>%
         e_chart(x=date) %>%
         e_line(relative_gain) %>%
         e_title("PGI Manager - Return %", left = 'center') %>%
@@ -219,6 +229,7 @@ server <- function(input, output) {
       
       plot_data %>%
         group_by(company) %>%
+        arrange(date) %>%
         e_chart(x=date) %>%
         e_line(relative_gain) %>%
         e_title("PGI Manager - Return %", left = 'center') %>%

@@ -2939,15 +2939,21 @@ html.no-csstransitions .home-content__main {
     background-image: url("../images/contact-bg.jpg");
     background-repeat: no-repeat;
     background-position: center, center;
-    padding-top: 15rem;
+    padding-top: 12rem;
     padding-bottom: 12rem;
     color: rgba(255, 255, 255, 0.5);
     position: relative;
 }
 
 .s-contact .leaderboard {
-    background-color: #151515;
-	color: rgba(255, 255, 255, 0.9);
+    background-color: #FFFFFF;
+	opacity: 1;
+	color: rgba(255, 255, 255, 1);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+
 }
 
 .s-contact .overlay {
@@ -3011,8 +3017,10 @@ html.no-csstransitions .home-content__main {
     max-width: 1000px;
     background-color: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 1);
-    padding-top: 6rem;
-    padding-bottom: 6rem;
+    padding-top: 4rem;
+	padding-right: 4rem;
+    padding-bottom: 4rem;
+	padding-left: 4rem;
 	text-align: center;
     font-family: "montserrat-light", sans-serif;
     font-size: 1.5rem;
@@ -3021,7 +3029,7 @@ html.no-csstransitions .home-content__main {
 }
 
 .contact-content h3 {
-    margin-top: 0;
+    margin-top: 0rem;
     margin-bottom: 6.6rem;
     color: #FFFFFF;
 }

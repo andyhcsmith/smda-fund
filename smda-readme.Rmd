@@ -25,7 +25,7 @@ The app is viewable [here](https://andyhcsmith.shinyapps.io/smda/)
 
 There are two main sources of data that feeds the application:
 
-* A Google Sheet that contains our monthly picks including information on who made the pick, the ticker symbol, the date the pick was made and whether or not the pick was chosen by the group. This gets manually updated after our monthly meeting.
+* A Google Sheet that contains our monthly picks including information on who made the pick, the ticker symbol, the date the pick was made and whether or not the pick was chosen by the group. This gets manually updated after our monthly meeting. I use the `googlesheets4` package to retreive this when the app is run.
 
 ![](www/images/google-sheet-example.PNG)
 

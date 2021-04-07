@@ -10,6 +10,22 @@ server <- function(input, output) {
   
   # Basic Numbers Page --------------------------------------------------------------
   
+  output$main_quote <- renderText({
+    rand_num = runif(1)
+    
+    if(rand_num <=0.25){
+      quote = "Always remember. What goes up must continue going up."
+    }else if(rand_num <= 0.5){
+      quote = "Work until your bank account looks like your phone number."
+    }else if (rand_num <= 0.75){
+      quote = "A winner is just a loser who tried one more time."
+    }else{
+      quote = "Hard work beats talent every time."
+    }
+    
+    return(quote)
+  })
+  
   output$best_company <- renderText({
     req(data)
     
@@ -87,6 +103,7 @@ server <- function(input, output) {
   })
   
   selected_table <- reactive({
+    req(data)
     
     if (whichTable()) {
       leaderboard <- data %>%
@@ -99,17 +116,24 @@ server <- function(input, output) {
         rename(Analyst = analyst) %>%
         arrange(-Performance)
       
-      datatable(leaderboard, options = list(dom = 't'))
+      datatable(leaderboard, 
+                options = list(dom = 't',
+                               columnDefs = list(list(className = 'dt-center', targets = 0:1))),
+                rownames= FALSE)
     } else {
 
-      today_change <- returnCalculator("company",1) %>% rename("Todays Change" = "percent_gain") 
-      week_change <- returnCalculator("company", 7)
-      total_change <- returnCalculator("company", 1000) %>% rename("Total Change" = "percent_gain") 
+      today_change <- returnCalculator(data, "company",1) %>% rename("Todays Change" = "percent_gain") 
+      week_change <- returnCalculator(data, "company", 7)
+      total_change <- returnCalculator(data, "company", 1000) %>% rename("Total Change" = "percent_gain") 
       
       overview <- inner_join(today_change, total_change %>% select(company, `Total Change`), by = "company")
-      overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares")
+      overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares") %>%
+        mutate(`Share Price` = signif(`Share Price`,2))
       
-      datatable(overview, options = list(pageLength=10, dom = 't'))
+      datatable(overview, 
+                options = list(dom = 't',
+                               columnDefs = list(list(className = 'dt-center', targets = 0:4))),
+                rownames= FALSE)
     }
     
   })
@@ -137,9 +161,11 @@ server <- function(input, output) {
     if(input$change_date == "1 Month"){
       plot_data <- plot_data %>%
         filter(date >= (today() - 31))
+      plot_data <- returnCalculatorDaily(plot_data)
     } else if(input$change_date == "1 Week"){
       plot_data <- plot_data %>%
         filter(date >= (today() - 7))
+      plot_data <- returnCalculatorDaily(plot_data)
     }
     
     # Outputs the desired plot
@@ -185,7 +211,7 @@ server <- function(input, output) {
         filter(pick == "Actual") %>%
         group_by(company) %>%
         e_chart(x=date) %>%
-        e_line(gains) %>%
+        e_line(relative_gain) %>%
         e_title("PGI Manager - Return %", left = 'center') %>%
         e_legend(orient = "horizontal", top = "bottom")
       
@@ -194,7 +220,7 @@ server <- function(input, output) {
       plot_data %>%
         group_by(company) %>%
         e_chart(x=date) %>%
-        e_line(gains) %>%
+        e_line(relative_gain) %>%
         e_title("PGI Manager - Return %", left = 'center') %>%
         e_legend(orient = "horizontal", top = "bottom", type = c("plain", "scroll"))
       

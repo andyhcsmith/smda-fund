@@ -10,6 +10,10 @@ ui = shiny::htmlTemplate(
   "www/index.html",
 
   # Basic Numbers -------------------------------------
+  main_quote_text = textOutput(
+    "main_quote",
+    inline = T
+  ),
   
   top_analyst_text = textOutput(
     "top_analyst",

@@ -8,7 +8,8 @@
 # Get our picks from the google sheet
 getPicksData <- function(){
 
-  picks = read.csv(url("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBC7iMqU4JNUBNqzmxPt7o_blG9ritXAR0RAQmbAUFaHO4oQpnWn8cKrj9tXSxerlwc5fAIbuOxiLH/pub?gid=343251432&single=true&output=csv"))
+  # Using the googlesheets4 package to get data
+  picks = read_sheet("1KjvNfNHIX8sOH5JOzAOXFdrVDZdaGrZljIxXEJ66uNk")
   picks = picks[!duplicated(picks$ticker),]
   
   return(picks)
@@ -43,8 +44,8 @@ getSharePrices <- function(pick){
 }
 
 runPriceFetcher <- function(){
-  picks <- picks %>% mutate(date_picked = dmy(date_picked),
-                            date_sold = dmy(date_sold))
+  picks <- picks %>% mutate(date_picked = ymd(date_picked),
+                            date_sold = ymd(date_sold))
   
   all_prices = data.frame()
   for (i in 1:nrow(picks)){
@@ -58,7 +59,7 @@ runPriceFetcher <- function(){
 }
 
 # Takes a stock and works out return between two dates
-returnCalculator <- function(group_variable, days){
+returnCalculator <- function(data, group_variable, days){
   
   if(days == 1){
     companyData = data %>% group_by(get(group_variable))
@@ -83,5 +84,17 @@ returnCalculator <- function(group_variable, days){
   colnames(comparisonData)[1] = group_variable
   
   return(comparisonData)
+}
+
+# Takes a stock and works out return between two dates (and reutrns down to a daily level)
+returnCalculatorDaily <- function(data){
+  
+  baseline <- data %>% filter(date == min(date)) %>% select(company, share_price) %>% 
+    rename("baseline" = "share_price")
+  
+  relative_data <- merge(data, baseline, by = "company")
+  relative_data <- relative_data %>% mutate(relative_gain = round((share_price/baseline)-1, 2)*100)
+  
+  return(relative_data)
 }
 

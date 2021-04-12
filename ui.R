@@ -75,7 +75,7 @@ ui = shiny::htmlTemplate(
   change_plot_picker = selectInput(
     inputId = "change_plot",
     label = "Gains",
-    choices = c("Portfolio Overview", "PGI Manager" ,"Actual Portfolio", "Virtual Portfolio", "Total Gains"),
+    choices = c("Portfolio Overview", "SMDA Manager" ,"Actual Portfolio", "Virtual Portfolio", "Total Gains"),
     selected = "Portfolio Overview"
   ),
   
@@ -84,6 +84,13 @@ ui = shiny::htmlTemplate(
     label = "Date Picker",
     choices = c("Max","6 Months", "1 Month", "1 Week"),
     selected = "1 Month"
+  ),
+  
+  company_plot_picker = selectInput(
+    inputId = "change_company",
+    label = "Company",
+    choices = c("All",unique(picks$company)),
+    selected = "All"
   ),
   
   plot =  echarts4rOutput("main_plot"),

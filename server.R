@@ -76,15 +76,27 @@ server <- function(input, output) {
   })
   
   output$overall_performance = renderText({
-    temp <- data %>%
-            filter(pick =="Actual") %>%
-            group_by(company) %>%
-            filter(date == max(date)) %>%
-            ungroup()
-    round((sum(temp$capital) / sum(temp$stake) - 1) * 100, 2)
+    performance <- data %>%
+                  filter(pick =="Actual") %>%
+                  group_by(company) %>%
+                  filter(date == max(date)) %>%
+                  ungroup()
+    round((sum(performance$capital) / sum(performance$stake) - 1) * 100, 2)
     
   })
 
+  output$month_performance = renderText({
+    
+    performance <- data %>% filter(date >= (today() - 30))
+    performance <- returnCalculatorDaily(performance)
+    performance <- data %>%
+      filter(pick =="Actual") %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup()
+    round((sum(performance$capital) / sum(performance$stake) - 1) * 100, 2)
+  })
+  
   # ValueBoxes --------------------------------------------------------------------
   
   output$top_analyst_box <- renderValueBox({
@@ -132,7 +144,9 @@ server <- function(input, output) {
       
       datatable(overview, 
                 options = list(dom = 't',
-                               columnDefs = list(list(className = 'dt-center', targets = 0:4))),
+                               columnDefs = list(list(className = 'dt-center', targets = 0:4)),
+                               scrollX = TRUE,
+                               scrollY = TRUE),
                 rownames= FALSE)
     }
     
@@ -188,7 +202,7 @@ server <- function(input, output) {
         e_title("Portfolio Overview - Return %", left = 'center') %>%
         e_legend(orient = "horizontal", top = "bottom")
       
-    } else if(input$change_plot == "PGI Manager"){
+    } else if(input$change_plot == "SMDA Manager"){
       
       plot_data %>%
         group_by(analyst, date) %>%
@@ -198,7 +212,7 @@ server <- function(input, output) {
         group_by(analyst) %>%
         e_chart(x=date) %>%
         e_line(gains) %>%
-        e_title("PGI Manager - Return %", left = 'center') %>%
+        e_title("SMDA Manager - Return %", left = 'center') %>%
         e_legend(orient = "horizontal", top = "bottom")
       
     } else if(input$change_plot == "Total Gains"){
@@ -222,7 +236,7 @@ server <- function(input, output) {
         arrange(date) %>%
         e_chart(x=date) %>%
         e_line(relative_gain) %>%
-        e_title("PGI Manager - Return %", left = 'center') %>%
+        e_title("Actual Portfolio - Return %", left = 'center') %>%
         e_legend(orient = "horizontal", top = "bottom")
       
     } else if(input$change_plot == "Virtual Portfolio"){

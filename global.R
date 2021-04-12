@@ -18,7 +18,7 @@ library(echarts4r)
 library(quantmod)
 library(rsconnect)
 
-# setwd("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda")
+setwd("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda")
 
 #  Clean Scripts ----------------------------------------------------------
 
@@ -26,5 +26,5 @@ source("src/helper-functions.R")
 
 gs4_deauth()
 
-picks = getPicksData()
-data = runPriceFetcher()
+# picks = getPicksData()
+# data = runPriceFetcher()

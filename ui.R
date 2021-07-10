@@ -49,20 +49,32 @@ ui = shiny::htmlTemplate(
   
   top_analyst_valuebox = valueBoxOutput("top_analyst_box"),
   
-  
-  
   # Tables --------------------------------------------
   
-  table_but = actionButton("table_button", "Switch"),
+  table_name = textOutput(
+    "table_name_text",
+    inline =T
+  ),
+  
+  table_analyst_but = actionButton(inputId = "table_analyst_button", 
+                                    label = "Leaderboard",
+                                    style="color: #39b54a; background-color: #000000; border-color: #39b54a"),
+  
+  table_shares_but = actionButton(inputId = "table_shares_button", 
+                                  label = "Holdings",
+                                   style="color: #39b54a; background-color: #000000; border-color: #39b54a"),
+  table_picker = selectInput(
+    inputId = "table_pick",
+    label = "",
+    choices = c("Leaderboard", "Holdings"),
+    selected = "Leaderboard"
+  ),
   
   leaderboard_table = dataTableOutput(
     "leaderboard"
   ),
   
-  # all_picks_table = dataTableOutput(
-  #   "all_picks"
-  # ),
-  
+
   # Plots ----------------------------------------------
   
   analyst_picker = selectInput(
@@ -76,7 +88,7 @@ ui = shiny::htmlTemplate(
     inputId = "change_plot",
     label = "Gains",
     choices = c("Portfolio Overview", "SMDA Manager" ,"Actual Portfolio", "Virtual Portfolio", "Total Gains"),
-    selected = "Portfolio Overview"
+    selected = "Actual Portfolio"
   ),
   
   change_date_picker = selectInput(
@@ -94,7 +106,7 @@ ui = shiny::htmlTemplate(
   ),
   
   plot =  echarts4rOutput("main_plot"),
-  
+
   plot_button = actionButton("andy1", "Andy"),
   
   change_plot_button = radioGroupButtons(

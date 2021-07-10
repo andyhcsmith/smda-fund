@@ -62,7 +62,7 @@ runPriceFetcher <- function(){
 returnCalculator <- function(data, group_variable, days){
   
   if(days == 1){
-    companyData = data %>% group_by(get(group_variable))
+    companyData = data %>% group_by(analyst, get(group_variable))
     comparison_price = companyData %>% 
       filter(date != max(date)) %>% 
       filter(date == max(date)) %>%
@@ -70,7 +70,7 @@ returnCalculator <- function(data, group_variable, days){
     
   } else{
     date_from = today() - days
-    companyData = data %>% group_by(get(group_variable)) %>% filter(date >= date_from)
+    companyData = data %>% group_by(analyst, get(group_variable)) %>% filter(date >= date_from)
     comparison_price = companyData %>% filter(date == min(date)) %>% select(share_price) %>% rename("comp_price" = "share_price")
   }
   
@@ -81,16 +81,19 @@ returnCalculator <- function(data, group_variable, days){
     mutate(num_shares = round(num_shares,2),
            percent_gain = round(100*((`Share Price`/comp_price)-1),2)) %>%
     select(-comp_price)
-  colnames(comparisonData)[1] = group_variable
+  colnames(comparisonData)[1:2] = c("analyst", group_variable)
   
   return(comparisonData)
 }
 
-# Takes a stock and works out return between two dates (and reutrns down to a daily level)
+# Takes a stock and works out return between two dates (and returns down to a daily level)
 returnCalculatorDaily <- function(data){
   
-  baseline <- data %>% filter(date == min(date)) %>% select(company, share_price) %>% 
-    rename("baseline" = "share_price")
+  baseline <- data %>% group_by(company) %>% 
+    filter(date == min(date)) %>% 
+    select(company, share_price) %>% 
+    rename("baseline" = "share_price") %>%
+    ungroup()
   
   relative_data <- merge(data, baseline, by = "company")
   relative_data <- relative_data %>% mutate(relative_gain = round((share_price/baseline)-1, 2)*100)

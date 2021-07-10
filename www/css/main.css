@@ -1236,6 +1236,19 @@ button::-moz-focus-inner, input::-moz-focus-inner {
     color: #FFFFFF;
 }
 
+.display-3 {
+    font-family: "montserrat-medium", sans-serif;
+    font-size: 3rem;
+    line-height: 1.25;
+    color: #000000;
+    margin-top: 1.0;
+	margin-bottom: 0
+}
+
+.display-3--light {
+    color: #FFFFFF;
+}
+
 .subhead + .display-2 {
     margin-top: .6rem;
 }
@@ -2224,6 +2237,10 @@ html.no-csstransitions .home-content__main {
     text-align: center;
 }
 
+.about-stats-a {
+    text-align: center;
+}
+
 .stats__col {
     margin: 5.4rem 0;
     padding: 0 2rem;
@@ -2953,6 +2970,9 @@ html.no-csstransitions .home-content__main {
     padding-bottom: 1rem;
 	padding-left: 1rem;
 	padding-right: 1rem;
+	background-position: center, center;
+	text-align: center;
+	position: absolute;
 
 }
 

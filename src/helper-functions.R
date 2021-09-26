@@ -89,7 +89,7 @@ returnCalculator <- function(data, group_variable, days){
 # Takes a stock and works out return between two dates (and returns down to a daily level)
 returnCalculatorDaily <- function(data){
   
-  baseline <- data %>% group_by(company) %>% 
+  baseline <- data %>% group_by(company, .groups = "keep") %>% 
     filter(date == min(date)) %>% 
     select(company, share_price) %>% 
     rename("baseline" = "share_price") %>%

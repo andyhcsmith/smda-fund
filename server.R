@@ -180,9 +180,46 @@ server <- function(input, output) {
   })
   
   output$leaderboard <- renderDataTable({
-    selected_table()
+    
+    leaderboard <- data %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup() %>%
+      group_by(analyst) %>%
+      summarise(Performance = round(mean(gains, na.rm = T),2)) %>%
+      ungroup() %>%
+      rename(Analyst = analyst) %>%
+      arrange(-Performance)
+    
+    datatable(leaderboard, 
+              options = list(dom = 't',
+                             columnDefs = list(list(className = 'dt-center', targets = 0:1))),
+              rownames= FALSE)
   })
   
+  output$actual_picks_table <- renderDataTable({
+    
+    today_change <- returnCalculator(data, "company",1) %>% mutate(percent_gain = percent_gain/100) %>% rename("Todays Change" = "percent_gain") 
+    week_change <- returnCalculator(data, "company", 7)  %>% mutate(percent_gain = percent_gain/100) %>%rename("Week Change" = "percent_gain") 
+    total_change <- returnCalculator(data, "company", 1000)  %>% mutate(percent_gain = percent_gain/100) %>% rename("Total Change" = "percent_gain") 
+    
+    overview <- inner_join(week_change, total_change %>% select(company, `Total Change`), by = "company")
+    overview <- overview %>% rename("Company" = "company", "Quantity" = "num_shares") %>%
+      mutate(`Share Price` = signif(`Share Price`,2)) %>%
+      mutate(Value = signif(`Share Price` * Quantity,2))
+    
+    overview <- overview %>%
+      filter(Quantity > 0) %>%
+      select(Company, Value, `Week Change`, `Total Change`) %>%
+      arrange(-`Total Change`)
+    
+    datatable(overview, 
+              options = list(dom = "tp",
+                             columnDefs = list(list(className = 'dt-center', targets = 0:3)),
+                             lengthMenu = c(10, 20, 30, 40)),
+              rownames= FALSE) %>% formatCurrency(2) %>% formatPercentage(3:4, 2)
+    
+  })
 
   # Plots ---------------------------------------------------------------------------
   
@@ -285,104 +322,4 @@ server <- function(input, output) {
 
   })
 
-  
-  output$main_plot2 <- renderEcharts4r({
-    req(data)
-    req(input$change_date)
-    req(input$analyst_pick)
-    
-    plot_data <- data
-    
-    # Filtering data
-    if(input$analyst_pick != "All"){
-      plot_data <- plot_data %>%
-        filter(analyst %in% input$analyst_pick)
-    } else {
-      if(input$change_plot == "Virtual Portfolio"){
-        plot_data <- plot_data %>%
-          filter(meeting == max(meeting))
-      }
-    }
-    
-    if(input$change_date == "Max"){
-      plot_data <- returnCalculatorDaily(plot_data)
-    } else if(input$change_date == "6 Months"){
-      plot_data <- plot_data %>%
-        filter(date >= (today() - 180))
-      plot_data <- returnCalculatorDaily(plot_data)
-    }  else if(input$change_date == "1 Month"){
-      plot_data <- plot_data %>%
-        filter(date >= (today() - 31))
-      plot_data <- returnCalculatorDaily(plot_data)
-    } else if(input$change_date == "1 Week"){
-      plot_data <- plot_data %>%
-        filter(date >= (today() - 7))
-      plot_data <- returnCalculatorDaily(plot_data)
-    }
-    
-    # Outputs the desired plot
-    if(input$change_plot == "Portfolio Overview"){
-      
-      plot_data %>%
-        group_by(pick, date) %>%
-        summarise(gains = mean(relative_gain, na.rm = T)) %>%
-        arrange(date) %>%
-        ungroup() %>% 
-        group_by(pick) %>%
-        e_chart(x=date) %>%
-        e_line(gains) %>%
-        e_title("Portfolio Overview - Return %", left = 'center') %>%
-        e_legend(orient = "horizontal", top = "bottom", bottom = "bottom")
-      
-    } else if(input$change_plot == "SMDA Manager"){
-      
-      plot_data %>%
-        group_by(analyst, date) %>%
-        summarise(gains = mean(relative_gain, na.rm = T)) %>%
-        arrange(date) %>%
-        ungroup() %>% 
-        group_by(analyst) %>%
-        e_chart(x=date) %>%
-        e_line(gains) %>%
-        e_title("SMDA Manager - Return %", left = 'center') %>%
-        e_legend(orient = "horizontal", top = "bottom")
-      
-    } else if(input$change_plot == "Total Gains"){
-      
-      plot_data %>%
-        filter(pick == "Actual") %>%
-        group_by(date) %>%
-        summarise(`Total Gains` = sum(relative_gain, na.rm = T)) %>%
-        arrange(date) %>%
-        ungroup() %>%
-        e_chart(x=date) %>%
-        e_line(`Total Gains`) %>%
-        e_title("Total Gains ($))", left = 'center') %>%
-        e_legend(show = FALSE)
-      
-    } else if(input$change_plot == "Actual Portfolio"){
-      
-      plot_data %>%
-        filter(pick == "Actual") %>%
-        group_by(company) %>%
-        arrange(date) %>%
-        e_chart(x=date) %>%
-        e_line(relative_gain) %>%
-        e_title("Actual Portfolio - Return %", left = 'center') %>%
-        e_legend(orient = "horizontal", top = "bottom")
-      
-    } else if(input$change_plot == "Virtual Portfolio"){
-      
-      plot_data %>%
-        group_by(company) %>%
-        arrange(date) %>%
-        e_chart(x=date) %>%
-        e_line(relative_gain) %>%
-        e_title("PGI Manager - Return %", left = 'center') %>%
-        e_legend(orient = "horizontal", top = "bottom", type = c("plain", "scroll"))
-      
-    }
-    
-  })
-  
 }

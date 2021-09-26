@@ -134,6 +134,37 @@
 
     </section> <!-- end s-home -->
 
+	<!-- SMDA Overview ==================================================  -->
+    <section id="styles" class="s-services">
+        
+        <div class="row narrow section-intro add-bottom text-center">
+
+            <div class="col-twelve tab-full">
+
+                <h1 class="display-2">Who are we?</h1>
+
+                <p class="lead"></p>
+
+            </div>
+
+        </div>
+		
+		<div class="row">
+
+            <div class="col-six tab-full">
+                <a href="#"><img width="600" height="600" class="pull-left" alt="sample-image" src="images/potm/potm_november.jpg"></a>
+            </div>
+
+            <div class="col-six tab-full">
+                <p class="drop-cap">SMDA is a New Zealand based company founded in mid 2020 with a mission of becoming the most profitable eight person fund in Remuera. With branches across 
+				Australasia, we specialise in global markets across all industries. </p>
+            </div>
+
+        </div> <!-- end row -->
+		
+	</section> 
+	<!-- SMDA OVERVIEW END -->
+
 	<!-- Pick of the month ================================================== 
     <section id='services' class="s-clients">
       	
@@ -147,8 +178,7 @@
     </section> 
     <!-- end pick of month -->
 
-    <!-- about
-    ================================================== -->
+    <!-- about ================================================== -->
     <section id='about' class="s-about">
 
         <div class="row section-header has-bottom-sep" data-aos="fade-up">
@@ -196,13 +226,32 @@
     </section> 
     <!-- end s-about -->
 
+    <!-- Actual Portfolio Graphs ================================================== -->
+    <section id='actual_portfolio' class="s-services">
+      
+        <div class="row section-header has-bottom-sep aos-init aos-animate" data-aos="fade-up">
+            <div class="col-full">
+                <h1 class="subhead">Portfolio Overview</h1>
+            </div>
+        </div>
+		
+        <div class="row narrow section-intro add-bottom text-center">
 
-    <!-- Performance Graphs ================================================== -->
+            <div class="col-twelve tab-full">
+				{{ actual_picks_table }}
+			</div>
+			
+        </div>
+
+    </section> 
+    <!-- end Actual Portfolio Graphs -->
+	
+    <!-- Performance Graphs - Slice and Dice ================================================== -->
     <section id='services' class="s-clients">
       
         <div class="row section-header has-bottom-sep aos-init aos-animate" data-aos="fade-up">
             <div class="col-full">
-                <h2 class="subhead">Let's check in with how our analysts have been tracking...</h2>
+                <h2 class="subhead">Slice and dice yourself</h2>
             </div>
         </div>
 		
@@ -226,7 +275,7 @@
         </div>
 
     </section> 
-    <!-- end graphs -->
+    <!-- end DIY Graphs -->
     
 	 <!-- Leaderboards
     ================================================== -->
@@ -243,15 +292,12 @@
         </div>
 
         <div class="row contact-content" data-aos="fade-up">
-			<h3 class="display-3 display-3--light">{{table_name}}</h3>
+			<h3 class="display-3 display-3--light">Analyst Leaderboard</h3>
 			
-			<div class="leaderboard" >
+			<div class="col-twelve tab-full">
 				{{ leaderboard_table }}
 			</div>
-			<div class="col-block">	
-				{{ table_picker }}
-			</div>
-			
+
         </div>
 		
     </section> <!-- end s-Leaderboards -->

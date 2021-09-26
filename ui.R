@@ -105,14 +105,13 @@ ui = shiny::htmlTemplate(
     selected = "All"
   ),
   
+  # The slice and dice plot on the fourth page
   plot =  echarts4rOutput("main_plot"),
 
-  plot_button = actionButton("andy1", "Andy"),
-  
-  change_plot_button = radioGroupButtons(
-    inputId = "change_plot2", label = "",
-    choices = c("Capital", "Gains"),
-    selected = "Gains", size = "lg", width = "100%",direction = "horizontal", 
+  # The table showing our actual picks with daily and total change
+  actual_picks_table =  dataTableOutput(
+    "actual_picks_table"
   )
+  
   
 )

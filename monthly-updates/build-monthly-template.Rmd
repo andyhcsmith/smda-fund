@@ -22,7 +22,7 @@ data = runPriceFetcher()
 
 ```{r, echo = TRUE}
 # Reading in slide
-pres <- read_pptx("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/monthly-update-template.pptx") 
+# pres <- read_pptx("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/monthly-update-template.pptx") 
 pres %>% officer::layout_properties()
 
 ```
@@ -75,8 +75,8 @@ plot_data %>%
         etoolbox() %>%
         etoolbox_save(type = "png", name = "actual_portfolio_plot", lang = "Save")
 
-actual_portfolio_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/actual_portfolio_plot.png")
-top_analyst_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/www/images/analysts/matt-bowden.png", width = 200, height = 300)
+# actual_portfolio_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/actual_portfolio_plot.png")
+# top_analyst_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/www/images/analysts/matt-bowden.png", width = 200, height = 300)
 
 ```
 
@@ -137,5 +137,5 @@ my_pres <- my_pres %>%
 
 
 
-print(my_pres, glue::glue("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/new_template.pptx"))
+# print(my_pres, glue::glue("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/new_template.pptx"))
 ```

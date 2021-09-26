@@ -1,0 +1,303 @@
+---
+title: "Strava Analysis"
+output: github_document
+
+knit: (function(inputFile, encoding) { 
+          rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file='README')})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The idea of this project was primarily a way of putting into practice my learnings from Jad Khalili's [Udemy Course](https://www.udemy.com/course/git-expert-4-hours/) on Git/GitHub. I took this course in order to deepen my knowledge around best practices in data science and source/version control. 
+
+In this course Jad covers:
+
+* An introduction to version/source control, Git and GitHub
+* Theory around repositories, the 'staging area', and basic/advanced Git commands
+* Git branches, and how to add, remove and merge them
+
+The actual content of the project itself was a way to do some basic analysis of my Strava data. Strava is an online 'social-media' platform specifically desinged to connect athletes and allow them to share and record their exercise activities. 
+
+To get access to my activity data I used the Strava API and the [rStrava package](https://github.com/fawda123/rStrava), and in order to create many of the visuals I used inspiration from [Marcus Volz](https://github.com/marcusvolz/strava).
+
+
+## Pretty Cool
+
+I thought this was an awesome plot that Marcus Volz made - so simple yet effective in visualising all your activities in one plot.
+
+```{r cars, echo=FALSE}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(lubridate)
+  library(yaml)
+  library(httr)
+  library(jsonlite)
+  library(devtools)
+  library(strava)
+  library(rStrava)
+  library(googlePolylines)
+  library(gridExtra)
+  library(kableExtra)
+  library(giphyr)
+})
+
+setwd('C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/strava-analysis')
+
+data <- process_data('activities/')
+p1 <- plot_facets(data)
+p1
+```   
+
+## Using the Strava API
+
+The Strava API allows you to pull all of your activities into a data frame, with each row representing an aggreagated view of your run/cycle/swim. It contains information such as: date, distance, time, speed, elevation, heart-rate etc. This aggregated view allows you to look at some high level data of your activities.
+
+
+```{r strava api, echo = F}
+credentials = suppressWarnings(read_yaml('credentials.yaml'))
+
+app <- oauth_app("strava", credentials$client_id, credentials$secret)
+endpoint <- oauth_endpoint(
+  request = NULL,
+  authorize = "https://www.strava.com/oauth/authorize",
+  access = "https://www.strava.com/oauth/token"
+)
+
+token <- oauth2.0_token(endpoint, app, as_header = FALSE,
+                        scope = "activity:read_all")
+
+acts <- get_activity_list(token)
+acts <- acts %>% compile_activities()
+
+acts <- acts %>% mutate(speed_min_km = (moving_time/60)/distance)
+acts <- acts %>% filter(speed_min_km > 3 & speed_min_km < 5.5)
+
+
+acts <- acts %>% 
+        mutate(distance_bucket = case_when(
+                                            distance < 6 ~ "< 6km",
+                                            distance < 9 ~ "6km - 9km",
+                                            distance < 12 ~ "9km - 12km",
+                                            distance < 15 ~ "12km - 15km",
+                                            distance >= 15 ~ "> 15km",
+                                          )
+        )
+acts$distance_bucket = factor(acts$distance_bucket, levels=c("< 6km", "6km - 9km", "9km - 12km", "12km - 15km", "> 15km"))
+
+
+```
+
+### How far am I running?
+
+Starting off simple, a look at the distances I am running. I have colored the histogram by the two houses I have lived in over this period. You'll see the tall red bar at approximately 7.5km, which is a run that I used to do around Princes Park (obviously I need to get a bit more creative in my runs). On average it would appear I have been running further distances while living in Richmond - probably because my main loop is around the Tan - about 10km.
+
+```{r run distance, echo = F}
+
+acts <- acts %>% mutate(year_date = year(start_date), house = ifelse(start_date <= "2020-03-20","Fitzroy","Richmond"))
+
+
+acts %>% ggplot(aes(x = distance, fill = house)) + geom_histogram(bins = 40) +
+  labs(title = "I have run around Princes Park too many times", x = "Distance (km)", y = "Count") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  annotate("text", x = 15, y = 30, label = "Princes Park (One Loop)")
+
+
+```
+
+### How about my speed
+
+It appears that I have more slower runs since moving to Richmond, which might make sense given how above we saw that I am doing longer distances instead.
+
+```{r run speed, echo = F}
+
+acts <- acts %>% mutate(year_date = year(start_date), house = ifelse(start_date <= "2020-03-20","Fitzroy","Richmond"))
+
+
+# acts %>% ggplot(aes(x = speed_min_km, fill = house)) + geom_histogram() +
+#   labs(title = "I seem to be getting faster", x = "Distance (km)", y = "Count") + 
+#   theme(plot.title = element_text(hjust = 0.5))
+acts %>% ggplot(aes(x = speed_min_km, fill = house)) + geom_density(alpha = 0.5) +
+  labs(title = "I seem to be getting slower", x = "Distance (km)", y = "Count") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+
+### Speed vs Distance
+
+Clearly though it would be best to view both Speed and Distance at the same time to get a more complete picture. So, what happens to my speed as the distance I run gets longer? 
+
+The results are somewhat obvious, the larger the run, the slower the speed. The one interesting thing was that my runs in the _6km to 9km_ range were on **average** faster than the _Under 6km_ range. However, looking at the **median** the _Under 6km_ runs are faster. My guess is that occasionally when I am not feeling up for a run, I will just head out for a short and slow run which is skewing these means.
+
+```{r run summary, echo=F}
+acts_summary <- acts %>% 
+                group_by(distance_bucket) %>%
+                summarise(`Number of Runs` = length(athlete.id), 
+                          `Average Distance` = round(mean(distance),2), 
+                          `Average Speed` = round(seconds_to_period(mean(speed_min_km)*60),0),
+                          `Median Speed` = round(seconds_to_period(median(speed_min_km)*60),0),
+                          .groups = 'drop')
+
+knitr::kable(
+  acts_summary
+)           
+
+```
+
+
+``` {r speed vs distance, echo = F}
+
+acts <- acts %>% group_by(distance_bucket) %>% mutate(avg_speed = mean(speed_min_km), median_speed = median(speed_min_km)) %>% ungroup()
+speed_distance <- acts %>% 
+                    ggplot(aes(x = speed_min_km, fill = distance_bucket)) + 
+                    geom_density(alpha = 0.5) + 
+                    labs(title = "Average speed (min/km) vs. Distance Run", x = "Speed (min/km)", y = "Density") +
+                    xlim(3.5, 5.5) +
+                    facet_grid(rows = vars(distance_bucket)) +
+                    geom_vline(aes(xintercept = median_speed, group = distance_bucket), colour="grey50")+
+                    theme(plot.title = element_text(hjust = 0.5))
+
+
+speed_distance
+
+```
+
+
+
+### Most importantly, how do I get Kudos?
+
+The social-media part of Strava allows users to like each others activities that they have posted, in Strava, this is called giving **'Kudos'**. I wondered what the best way to get Kudos from my Strava community was. Do they prefer fast runs, or longer runs? 
+
+I should note that around mid-late April 2020 I synced my Strava with my Facebook account meaning I was now connected to a larger community of my friends. Hence, to make this a fair, I will only be looking at my runs after April 24th 2020 (when I synced my account).
+
+
+
+```{r kudos, echo = F}
+kudos_speed <- acts %>% filter(start_date >= "2020-04-20") %>%
+                          ggplot(aes(x = speed_min_km, y = kudos_count)) + 
+                          geom_point() +
+                          geom_smooth(method = "lm", formula = 'y ~ x', alpha = .15) +
+                          labs(title = "Kudos vs. Speed", x = "Speed (min/km)", y = "Kudos") +
+                          theme(plot.title = element_text(hjust = 0.5))
+
+
+
+kudos_distsance <- acts %>% filter(start_date >= "2020-04-20") %>%
+                          ggplot(aes(x = distance, y = kudos_count)) + 
+                          geom_point() + 
+                          geom_smooth(method = "lm", formula = 'y ~ x', alpha = .15) +
+                          labs(title = "Kudos vs. Distance", x = "Distance (km)", y = "Kudos") +
+                          theme(plot.title = element_text(hjust = 0.5))
+
+
+grid.arrange(kudos_speed, kudos_distsance, ncol = 2)
+
+```
+
+
+A linear regression run of _Kudos = Distance_ gives a coefficient of 0.5405. This means I should expect to get 1 kudos for every 540m run.
+
+```{r, echo = F}
+speed_model <- lm(data = acts, kudos_count ~ 0 + speed_min_km)
+distance_model <- lm(data = acts, kudos_count ~ distance)
+speed_model
+distance_model
+
+```
+
+The evidence from this **very detailed** analysis is clear...
+
+`r text_spec("DISTANCE = KUDOS", color = "red")`
+
+
+
+## Visualising GPS data
+
+Strava members are also able to access their Strava data by requesting an archive of all of their activities [here](https://support.strava.com/hc/en-us/articles/216918437-Exporting-your-Data-and-Bulk-Export). Following these instructions allows you to get a mass export of all data, and most importantly it includes the actual GPS data files that contains latitude and longitude data. These files vary based on the method of recording your activities - my Samsung Galaxay Watch records them as GPX files.
+
+This is how many of Marcus Volz's creative plots can be generated:
+
+### Running frequency
+
+You will notice there are two main periods that I have maintained consistent uploads to Strava:
+
+1. Mid 2019 - in preparation for a marathon in Oct 2019 (dark red square)
+2. Early 2020 - motivation to start running consistently again as Melbourne went into Covid lockdown
+
+```{r runs, echo=FALSE}
+p_cal <- plot_calendar(data, unit = "distance") + 
+          ggtitle("Calendar of all runs") +
+          theme(plot.title = element_text(hjust = 0.5))
+
+p_cal
+
+```
+
+### Where have I been running?
+
+The following plot shows my runs placed on a map, with the darkness of the lines indicating the number of times I have run over a particular part of Melbourne. Three things to note:
+
+1. You'll notice there are two main parts of town that are darker than the rest. These represent when I moved house from Fitzroy North to Richmond.
+2. The route at the bottom of the map is the marathon route that takes you down St Kilda.
+3. The run I did where I spelt out my name (ANDY) :) 
+
+![](www/andy-runs.gif)
+
+```{r map, echo=FALSE}
+
+plot_map_andy <- function (data, lon_min = NA, lat_min = NA, lon_max = NA, lat_max = NA) 
+{
+    andy_run <- data %>% filter(as.Date(time) == "2020-05-13")
+    data %>% ggplot(aes(lon, lat, group = id)) + geom_path(alpha = 0.3, 
+        size = 0.3, lineend = "round") + 
+        geom_path(data = andy_run, aes(lon, lat, group = id), alpha = 1, color = 'red', size = 0.5, lineend = "round") + 
+        coord_map(projection = "mercator", xlim = c(lon_min,lon_max), ylim = c(lat_min, lat_max)) + theme_void()
+  }
+
+p_map <- plot_map_andy(data, lon_min = 144.863491, lon_max = 145.073007, lat_min = -37.883543, lat_max = -37.766141) + 
+          ggtitle("Map of all my runs overlayed") +
+          theme(plot.title = element_text(hjust = 0.5))
+p_map
+```
+
+### What time of the day?
+
+This visual allows you to see the frequency of your runs by time of day and day of week. I clearly prefer to run after work on Monday - Thursday, in the mornings on Friday and Saturday, and across the day on Sundays.
+
+```{r time of day, echo = F, message = FALSE}
+suppressMessages(plot_ridges(data))
+
+```
+
+I thought it might be interesting to see how this distribution changed between last year and this COVID affected year. During COVID I have been working from home, which has given me the flexibility to run during the day. And sure enough, you can see that in the post-COVID plot, my runs have been much more dispersed across the day compared to pre-COVID.
+
+
+```{r time of day 2, echo=FALSE}
+pre_covid <- plot_ridges(data %>% filter(time <= "2020-03-01")) + ggtitle("Pre-Covid") +
+          theme(plot.title = element_text(hjust = 0.5))
+post_covid <- plot_ridges(data %>% filter(time > "2020-03-01")) + ggtitle("Post-Covid") +
+          theme(plot.title = element_text(hjust = 0.5)) 
+
+suppressMessages(grid.arrange(pre_covid, post_covid, ncol = 2))
+
+```
+
+## Conclusion
+
+This analysis was a great way to familiarise myself with Git and GitHub. It also was just interesting to get a different view of my exercise data, and it has been well received by friends who also use Strava.
+
+I hope you have enjoyed :) 
+
+
+
+
+
+
+

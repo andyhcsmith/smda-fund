@@ -1,0 +1,141 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+require(tidyverse)
+require(officer)
+require(lubridate)
+require(echarts)
+require(png)
+
+setwd("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda")
+source("src/helper-functions.R")
+
+gs4_deauth()
+picks = getPicksData()
+data = runPriceFetcher()
+
+```
+
+
+```{r, echo = TRUE}
+# Reading in slide
+pres <- read_pptx("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/monthly-update-template.pptx") 
+pres %>% officer::layout_properties()
+
+```
+
+```{r}
+month_name = month(today(), label = T)
+
+# Overall Performance
+overall_performance <- share_data %>%
+                  filter(pick =="Actual") %>%
+                  group_by(company) %>%
+                  filter(date == max(date)) %>%
+                  ungroup()
+overall_performance <- round((sum(overall_performance$capital) / sum(overall_performance$stake) - 1) * 100, 2)
+    
+# Month Performance
+month_performance <- share_data %>% filter(date >= (today() - 30))
+month_performance <- returnCalculatorDaily(month_performance)
+month_performance <- share_data %>%
+  filter(pick =="Actual") %>%
+  group_by(company) %>%
+  filter(date == max(date)) %>%
+  ungroup()
+month_performance <- round((sum(month_performance$capital) / sum(month_performance$stake) - 1) * 100, 2)
+    
+# Best Company of last month
+best_company <- share_data %>%
+      filter(pick == "Actual") %>%
+      group_by(company) %>%
+      filter(date == max(date)) %>%
+      ungroup() %>%
+      filter(gains == max(gains, na.rm=T)) %>%
+      select(company) %>%
+      as.character()
+
+
+# Bulding Plot
+
+plot_data <- share_data %>%
+  filter(date >= (today() - 31))
+plot_data <- returnCalculatorDaily(plot_data)
+plot_data %>%
+        filter(pick == "Actual") %>%
+        group_by(company) %>%
+        arrange(date) %>%
+        e_chart(x=date) %>%
+        e_line(relative_gain) %>%
+        e_title("Actual Portfolio - Return %", left = 'center') %>%
+        e_legend(orient = "horizontal", top = "bottom") %>%
+        etoolbox() %>%
+        etoolbox_save(type = "png", name = "actual_portfolio_plot", lang = "Save")
+
+actual_portfolio_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/actual_portfolio_plot.png")
+top_analyst_image <- external_img(src = "C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/www/images/analysts/matt-bowden.png", width = 200, height = 300)
+
+```
+
+```{r}
+#################### Second Page
+
+# Company Holdings
+month_change <- returnCalculator(share_data, "company", 30) %>% rename("Month Change" = "percent_gain") 
+total_change <- returnCalculator(share_data, "company", 1000) %>% rename("Total Change" = "percent_gain") 
+
+actual_holdings <- inner_join(month_change, total_change %>% select(company, `Total Change`), by = "company")
+actual_holdings <- actual_holdings %>% rename("Company" = "company", "Quantity" = "num_shares") %>%
+  mutate(`Share Price` = signif(`Share Price`,2)) 
+
+actual_holdings <- actual_holdings %>%
+  filter(Quantity > 0)
+
+actual_holdings <- actual_holdings %>%
+  select(Company, `Month Change`, `Total Change`) %>%
+  arrange(-`Total Change`)
+
+
+# Individual Holdings
+month_change <- returnCalculator(share_data, "company", 30) %>% rename("Month Change" = "percent_gain") 
+total_change <- returnCalculator(share_data, "company", 1000) %>% rename("Total Change" = "percent_gain") 
+
+ind_holdings <- inner_join(month_change, total_change %>% select(company, `Total Change`), by = "company")
+ind_holdings <- ind_holdings %>% rename("Company" = "company", "Quantity" = "num_shares") %>%
+  mutate(`Share Price` = signif(`Share Price`,2))
+
+ind_holdings <- ind_holdings %>%
+  filter(analyst == "Andy")
+
+ind_holdings <- ind_holdings %>%
+  select(Company, `Month Change`, `Total Change`) %>%
+  arrange(-`Total Change`)
+
+
+```
+
+
+```{r, echo = TRUE}
+# Removing first template slide
+my_pres <- pres %>%
+  remove_slide(index = 1) %>%
+  add_slide(layout = "SMDA Overview", master = "Office Theme") %>%
+  ph_with(value = paste0("SMDA ",month_name, " Update"), location = ph_location_label(ph_label = "firstpagetitle")) %>%
+  ph_with(value = paste0(month_performance,"%"), location = ph_location_label(ph_label = "lastmonthpercentchange")) %>%
+  ph_with(value = paste0(overall_performance,"%"), location = ph_location_label(ph_label = "overallpercentchange")) %>%
+  ph_with(value = best_company, location = ph_location_label(ph_label = "lastmonthbestock")) %>%
+  ph_with(value = actual_portfolio_image, location = ph_location_label(ph_label = "lastmonthgraph")) %>%
+  ph_with(value = top_analyst_image , location = ph_location_label(ph_label = "lastmonthanalyst"))
+
+my_pres <- my_pres %>%
+  add_slide(layout = "Analyst Overview", master = "Office Theme") %>%
+  ph_with(value = actual_holdings, location = ph_location_label(ph_label = "Company Holdings Table")) %>%
+  ph_with(value = ind_holdings, location = ph_location_label(ph_label = "Individual Holdings Table"))
+
+
+
+print(my_pres, glue::glue("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda/monthly-updates/new_template.pptx"))
+```

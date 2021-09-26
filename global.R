@@ -18,7 +18,7 @@ library(echarts4r)
 library(quantmod)
 library(rsconnect)
 
-# setwd("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda")
+setwd("C:/Users/asmi797/OneDrive/Documents/Leisure/data-projects/smda")
 
 #  Clean Scripts ----------------------------------------------------------
 
